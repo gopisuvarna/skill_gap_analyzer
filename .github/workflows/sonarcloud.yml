@@ -35,8 +35,9 @@ jobs:
           pip install pytest pytest-django pytest-cov
 
       - name: Run backend tests with coverage
-        working-directory: backend
-        run: pytest --cov=. --cov-report=xml:coverage.xml
+        env:
+          PYTHONPATH: backend
+        run: python -m pytest backend/tests --ds=config.test_settings --cov=backend --cov-report=xml:backend/coverage.xml
 
       - name: Install frontend dependencies
         working-directory: frontend
@@ -51,12 +52,12 @@ jobs:
         run: |
           if (!(Test-Path backend/coverage.xml)) { throw "Missing backend/coverage.xml" }
           if (!(Test-Path frontend/coverage/lcov.info)) { throw "Missing frontend/coverage/lcov.info" }
+          if ((Get-Item backend/coverage.xml).Length -eq 0) { throw "backend/coverage.xml is empty" }
+          if ((Get-Item frontend/coverage/lcov.info).Length -eq 0) { throw "frontend/coverage/lcov.info is empty" }
+          Get-Item backend/coverage.xml, frontend/coverage/lcov.info | Select-Object FullName, Length
 
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@fd88b7d7ccbaefd23d8f36f73b59db7a3d246602 # v6.0.0
-        with:
-          args: >
-            -Dsonar.projectKey=${{ vars.SONAR_PROJECT_KEY }}
-            -Dsonar.organization=${{ vars.SONAR_ORGANIZATION }}
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

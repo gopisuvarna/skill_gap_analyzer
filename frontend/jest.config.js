@@ -9,13 +9,18 @@ const customJestConfig = {
   testEnvironment: "jest-environment-jsdom",
   setupFilesAfterEnv: ["<rootDir>/jest.setup.js"],
   collectCoverage: true,
+  collectCoverageFrom: [
+    "src/**/*.{ts,tsx}",
+    "app/**/*.{ts,tsx}",
+    "!**/*.d.ts",
+    "!app/**/layout.tsx",
+    "!app/**/page.tsx",
+  ],
   coverageDirectory: "coverage",
   coverageReporters: ["text", "lcov"],
   testMatch: [
     "<rootDir>/tests/**/*.test.ts",
     "<rootDir>/tests/**/*.test.tsx",
-    "<rootDir>/tests/**/*.spec.ts",
-    "<rootDir>/tests/**/*.spec.tsx",
   ],
 };
 
