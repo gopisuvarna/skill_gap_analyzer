@@ -4,6 +4,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.db import transaction
+from django.views.decorators.csrf import csrf_protect
 
 from apps.documents.models import Document
 from apps.embeddings.models import SkillEmbedding
@@ -26,6 +27,7 @@ def get_or_create_skill(name: str):
     return skill
 
 
+@csrf_protect
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def extract_from_document(request):
@@ -64,6 +66,7 @@ def extract_from_document(request):
     })
 
 
+@csrf_protect
 @api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
 def user_skills(request):
@@ -86,6 +89,7 @@ def user_skills(request):
     return Response(UserSkillSerializer(us).data, status=status.HTTP_201_CREATED)
 
 
+@csrf_protect
 @api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
 def remove_user_skill(request, pk):

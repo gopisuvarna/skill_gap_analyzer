@@ -10,6 +10,8 @@ import numpy as np
 
 from django.db import transaction
 from django.conf import settings
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_protect
 
 from .models import Document
 from apps.skills.services.resume_skill_tool import SkillTool, normalize_skill
@@ -85,6 +87,7 @@ def _search_recommended_roles(all_skills: list) -> list:
     ]
 
 
+@method_decorator(csrf_protect, name="dispatch")
 class ResumeUploadView(APIView):
     """
     Upload PDF → Extract Text → Extract Skills (NLP + LLM)

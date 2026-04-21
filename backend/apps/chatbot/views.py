@@ -4,6 +4,7 @@ AI Career Mentor chatbot using Groq.
 
 import logging
 from django.conf import settings
+from django.views.decorators.csrf import csrf_protect
 from django.db.models import Prefetch
 
 from rest_framework import status
@@ -143,6 +144,7 @@ def _build_context(user) -> str:
 # -----------------------------------
 # Chat API
 # -----------------------------------
+@csrf_protect
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def chat(request):

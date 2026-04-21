@@ -5,6 +5,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from django.contrib.auth import authenticate
 from django.conf import settings
+from django.views.decorators.csrf import csrf_protect
 import jwt
 
 from .models import User
@@ -80,6 +81,7 @@ def _clear_cookies(response: Response):
     return response
 
 
+@csrf_protect
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def register(request):
@@ -91,6 +93,7 @@ def register(request):
     return _set_cookies(response, access, refresh)
 
 
+@csrf_protect
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def login(request):
@@ -119,6 +122,7 @@ def login(request):
     return _set_cookies(response, access, refresh)
 
 
+@csrf_protect
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def logout(request):
@@ -135,6 +139,7 @@ def logout(request):
     return _clear_cookies(response)
 
 
+@csrf_protect
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def refresh(request):
