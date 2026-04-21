@@ -1,8 +1,18 @@
 """JWT authentication with HTTP-only cookie extraction."""
 from rest_framework import authentication, exceptions
+from rest_framework.permissions import SAFE_METHODS
 from django.conf import settings
 import jwt
 from .models import User
+
+
+def enforce_csrf(request) -> None:
+    """Run Django CSRF checks and raise PermissionDenied on failure."""
+    check = authentication.CSRFCheck(lambda req: None)
+    check.process_request(request)
+    reason = check.process_view(request, None, (), {})
+    if reason:
+        raise exceptions.PermissionDenied(f"CSRF Failed: {reason}")
 
 
 class JWTCookieAuthentication(authentication.BaseAuthentication):
@@ -13,6 +23,7 @@ class JWTCookieAuthentication(authentication.BaseAuthentication):
 
         # 1️⃣ Try cookie first
         token = request.COOKIES.get(access_name)
+        using_cookie = bool(token)
 
         # 2️⃣ Fallback to Authorization header
         if not token:
@@ -22,6 +33,9 @@ class JWTCookieAuthentication(authentication.BaseAuthentication):
 
         if not token:
             return None
+
+        if using_cookie and request.method not in SAFE_METHODS:
+            enforce_csrf(request)
 
         try:
             payload = jwt.decode(

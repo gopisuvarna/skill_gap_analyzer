@@ -1,5 +1,5 @@
 """Auth endpoints: register, login, logout, refresh, me."""
-from rest_framework import status
+from rest_framework import status, exceptions
 from rest_framework.decorators import  api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -9,6 +9,7 @@ import jwt
 
 from .models import User
 from .serializers import RegisterSerializer, LoginSerializer, UserSerializer
+from .authentication import enforce_csrf
 
 
 from django.utils import timezone
@@ -123,6 +124,13 @@ def login(request):
 def logout(request):
     # AllowAny — clearing cookies never requires a valid token.
     # If the token expired the user still needs to be logged out cleanly.
+    c = settings.COOKIE_CONFIG
+    if request.COOKIES.get(c['ACCESS_COOKIE_NAME']) or request.COOKIES.get(c['REFRESH_COOKIE_NAME']):
+        try:
+            enforce_csrf(request)
+        except exceptions.PermissionDenied as exc:
+            return Response({'detail': str(exc.detail)}, status=status.HTTP_403_FORBIDDEN)
+
     response = Response({'detail': 'Logged out'})
     return _clear_cookies(response)
 
@@ -134,6 +142,12 @@ def refresh(request):
     token = request.COOKIES.get(c['REFRESH_COOKIE_NAME'])
     if not token:
         return Response({'detail': 'Refresh token required'}, status=status.HTTP_401_UNAUTHORIZED)
+
+    try:
+        enforce_csrf(request)
+    except exceptions.PermissionDenied as exc:
+        return Response({'detail': str(exc.detail)}, status=status.HTTP_403_FORBIDDEN)
+
     try:
         payload = jwt.decode(
             token,

@@ -113,8 +113,12 @@ class LLMSkillExtractor:
             )
             text = response.choices[0].message.content.strip()
             text = re.sub(r"```json|```", "", text).strip()
-            match = re.search(r"\{.*\}", text, re.DOTALL)
-            json_text = match.group(0) if match else text
+            json_start = text.find("{")
+            json_end = text.rfind("}")
+            if json_start != -1 and json_end > json_start:
+                json_text = text[json_start:json_end + 1]
+            else:
+                json_text = text
             data = json.loads(json_text)
             skills = data.get("skills", [])
             if not isinstance(skills, list):

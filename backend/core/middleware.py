@@ -1,7 +1,6 @@
 """Custom middleware for security and CSRF handling."""
 import json
 import os
-import re
 import tempfile
 import time
 from django.http import JsonResponse
@@ -35,7 +34,10 @@ class RateLimitMiddleware(MiddlewareMixin):
             pass
 
     def process_request(self, request):
-        if not re.match(r'^/api/auth/(login|register)', request.path):
+        if not (
+            request.path.startswith('/api/auth/login')
+            or request.path.startswith('/api/auth/register')
+        ):
             return None
 
         ip = self._get_client_ip(request)
@@ -57,19 +59,6 @@ class RateLimitMiddleware(MiddlewareMixin):
         if x_forwarded_for:
             return x_forwarded_for.split(',')[0].strip()
         return request.META.get('REMOTE_ADDR', '127.0.0.1')
-
-
-class CSRFExemptAPIMiddleware(MiddlewareMixin):
-    """
-    Exempt all /api/ routes from Django's CSRF enforcement.
-
-    Safe because every /api/ endpoint is protected by JWTCookieAuthentication.
-    CSRF is only needed for session-based auth, which this project does not use.
-    """
-    def process_request(self, request):
-        if request.path.startswith('/api/'):
-            setattr(request, '_dont_enforce_csrf_checks', True)
-        return None
 
 
 class CSRFCookieMiddleware(MiddlewareMixin):
