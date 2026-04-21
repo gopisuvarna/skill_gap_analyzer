@@ -4,6 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.db.models import Count, Prefetch, Q
 from django.utils import timezone
+from django.views.decorators.http import require_GET
 
 from apps.jobs.models import Job, JobSkill
 from apps.skills.models import UserSkill
@@ -39,6 +40,7 @@ def _job_dict(job, user_skill_ids=None):
     }
 
 
+@require_GET
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def list_jobs(request):
@@ -73,6 +75,7 @@ def list_jobs(request):
     })
 
 
+@require_GET
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def matched_jobs(request):
@@ -122,6 +125,7 @@ def matched_jobs(request):
     })
 
 
+@require_GET
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def job_stats(request):

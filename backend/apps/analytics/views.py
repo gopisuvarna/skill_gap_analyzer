@@ -3,6 +3,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from django.db.models import Prefetch
+from django.views.decorators.http import require_GET
 
 from apps.skills.models import UserSkill
 from apps.roles.models import Role, RoleSkill
@@ -110,6 +111,7 @@ def _build_job_matches(user_skill_ids: set) -> list:
     ]
 
 
+@require_GET
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def dashboard(request):

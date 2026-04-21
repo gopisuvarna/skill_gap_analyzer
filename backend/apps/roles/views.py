@@ -3,11 +3,13 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.db.models import Prefetch
+from django.views.decorators.http import require_GET
 
 from .models import Role, RoleSkill
 from .serializers import RoleSerializer
 
 
+@require_GET
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def list_roles(request):

@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from django.contrib.auth import authenticate
 from django.conf import settings
 from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.http import require_GET, require_POST
 import jwt
 
 from .models import User
@@ -81,6 +82,7 @@ def _clear_cookies(response: Response):
     return response
 
 
+@require_POST
 @csrf_protect
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -93,6 +95,7 @@ def register(request):
     return _set_cookies(response, access, refresh)
 
 
+@require_POST
 @csrf_protect
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -122,6 +125,7 @@ def login(request):
     return _set_cookies(response, access, refresh)
 
 
+@require_POST
 @csrf_protect
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -139,6 +143,7 @@ def logout(request):
     return _clear_cookies(response)
 
 
+@require_POST
 @csrf_protect
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -169,6 +174,7 @@ def refresh(request):
         return Response({'detail': 'Invalid refresh token'}, status=status.HTTP_401_UNAUTHORIZED)
 
 
+@require_GET
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def me(request):

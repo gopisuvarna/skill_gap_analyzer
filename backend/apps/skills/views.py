@@ -5,6 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.db import transaction
 from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.http import require_GET, require_POST, require_http_methods
 
 from apps.documents.models import Document
 from apps.embeddings.models import SkillEmbedding
@@ -27,6 +28,7 @@ def get_or_create_skill(name: str):
     return skill
 
 
+@require_POST
 @csrf_protect
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
@@ -66,14 +68,20 @@ def extract_from_document(request):
     })
 
 
+@require_GET
 @csrf_protect
-@api_view(["GET", "POST"])
+@api_view(["GET"])
 @permission_classes([IsAuthenticated])
-def user_skills(request):
-    if request.method == "GET":
-        qs = UserSkill.objects.filter(user=request.user).select_related("skill")
-        return Response(UserSkillSerializer(qs, many=True).data)
+def list_user_skills(request):
+    qs = UserSkill.objects.filter(user=request.user).select_related("skill")
+    return Response(UserSkillSerializer(qs, many=True).data)
 
+
+@require_POST
+@csrf_protect
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def add_user_skill(request):
     skill_name = request.data.get("name")
     if not skill_name:
         return Response(
@@ -89,6 +97,7 @@ def user_skills(request):
     return Response(UserSkillSerializer(us).data, status=status.HTTP_201_CREATED)
 
 
+@require_http_methods(["DELETE"])
 @csrf_protect
 @api_view(["DELETE"])
 @permission_classes([IsAuthenticated])

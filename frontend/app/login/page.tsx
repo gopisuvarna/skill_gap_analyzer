@@ -5,8 +5,15 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { api } from "@/lib/api";
 
-// FIX: client-side validation constants
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+function isLikelyEmail(value: string): boolean {
+  const v = value.trim();
+  if (!v || v.includes(" ")) return false;
+  const at = v.indexOf("@");
+  if (at <= 0 || at !== v.lastIndexOf("@") || at === v.length - 1) return false;
+  const domain = v.slice(at + 1);
+  const dot = domain.indexOf(".");
+  return dot > 0 && dot < domain.length - 1;
+}
 
 export default function LoginPage() {
   const router = useRouter();
@@ -24,8 +31,7 @@ export default function LoginPage() {
   function validate(): boolean {
     const next: typeof errors = {};
     if (!email.trim()) next.email = "Email is required.";
-    else if (!EMAIL_REGEX.test(email))
-      next.email = "Enter a valid email address.";
+    else if (!isLikelyEmail(email)) next.email = "Enter a valid email address.";
     if (!password) next.password = "Password is required.";
     setErrors(next);
     return Object.keys(next).length === 0;

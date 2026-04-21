@@ -12,6 +12,7 @@ from django.db import transaction
 from django.conf import settings
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.http import require_GET
 
 from .models import Document
 from apps.skills.services.resume_skill_tool import SkillTool, normalize_skill
@@ -96,6 +97,7 @@ class ResumeUploadView(APIView):
                 → Return skills + recommended roles
     """
     permission_classes = [IsAuthenticated]
+    http_method_names = ["post", "options"]
 
     def post(self, request):
         try:
@@ -143,6 +145,7 @@ class ResumeUploadView(APIView):
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+@require_GET
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def latest_resume_roles(request):

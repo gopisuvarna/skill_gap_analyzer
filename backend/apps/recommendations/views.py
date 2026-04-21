@@ -4,6 +4,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.db.models import Prefetch
+from django.views.decorators.http import require_GET
 
 from apps.skills.models import UserSkill
 from apps.roles.models import Role, RoleSkill
@@ -12,6 +13,7 @@ from core.services.learning_recommendation_service import get_courses_for_skills
 from apps.roles.services import get_faiss_index, re_rank, compute_skill_gap
 
 
+@require_GET
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def top_roles(request):
@@ -79,6 +81,7 @@ def top_roles(request):
     return Response({'roles': ranked})
 
 
+@require_GET
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def skill_gap(request, role_id):
@@ -106,6 +109,7 @@ def skill_gap(request, role_id):
     return Response(gap)
 
 
+@require_GET
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def learning_plan(request, role_id):

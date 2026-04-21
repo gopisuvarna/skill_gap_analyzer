@@ -12,6 +12,12 @@ export async function getCsrfToken(): Promise<string> {
       credentials: "include",
     },
   );
-  const tokenMatch = /csrftoken=([^;]+)/.exec(document.cookie);
-  return tokenMatch?.[1] ?? "";
+  const pairs = document.cookie.split(";");
+  for (const pair of pairs) {
+    const [rawKey, ...rawValueParts] = pair.trim().split("=");
+    if (rawKey === "csrftoken") {
+      return decodeURIComponent(rawValueParts.join("="));
+    }
+  }
+  return "";
 }

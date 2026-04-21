@@ -31,7 +31,7 @@ export function useSkills() {
     if (!name.trim()) return;
     setAdding(true);
     try {
-      await api.post("/skills/", { name: name.trim() });
+      await api.post("/skills/manual/", { name: name.trim() });
       loadSkills();
     } finally {
       setAdding(false);
