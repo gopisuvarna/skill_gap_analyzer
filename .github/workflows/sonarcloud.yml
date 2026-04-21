@@ -21,6 +21,13 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
       - name: Install backend test dependencies
         run: |
           python -m pip install --upgrade pip
@@ -30,6 +37,20 @@ jobs:
       - name: Run backend tests with coverage
         working-directory: backend
         run: pytest --cov=. --cov-report=xml:coverage.xml
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Run frontend tests with coverage
+        working-directory: frontend
+        run: npm run test:coverage
+
+      - name: Verify coverage reports
+        shell: pwsh
+        run: |
+          if (!(Test-Path backend/coverage.xml)) { throw "Missing backend/coverage.xml" }
+          if (!(Test-Path frontend/coverage/lcov.info)) { throw "Missing frontend/coverage/lcov.info" }
 
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@fd88b7d7ccbaefd23d8f36f73b59db7a3d246602 # v6.0.0
