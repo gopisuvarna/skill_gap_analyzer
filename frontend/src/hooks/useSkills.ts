@@ -10,8 +10,8 @@ export interface UserSkill {
 export function useSkills() {
   const [skills, setSkills] = useState<UserSkill[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [adding, setAdding] = useState<boolean>(false); // FIX: loading state for add
-  const [removingId, setRemovingId] = useState<string | null>(null); // FIX: loading state for remove
+  const [adding, setAdding] = useState<boolean>(false);
+  const [removingId, setRemovingId] = useState<string | null>(null);
 
   useEffect(() => {
     loadSkills();

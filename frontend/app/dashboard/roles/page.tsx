@@ -14,7 +14,7 @@ interface MatchBarProps {
 
 function MatchBar({ score }: MatchBarProps) {
   const pct = Math.round(score * 100);
-  const color = getMatchColor(pct); // S3358: no nested ternary here anymore
+  const color = getMatchColor(pct);
   return (
     <div className="mt-3">
       <div className="flex justify-between text-xs mb-1 color-muted">

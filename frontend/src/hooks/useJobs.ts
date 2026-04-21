@@ -26,8 +26,6 @@ interface JobsResponse {
 }
 
 const PER_PAGE = 15;
-
-// FIX: use refs for search/page inside fetchData to avoid stale closures
 export function useJobs() {
   const [matched, setMatched] = useState<Job[]>([]);
   const [allJobs, setAllJobs] = useState<Job[]>([]);
@@ -38,8 +36,6 @@ export function useJobs() {
   const [page, setPage] = useState<number>(1);
   const [total, setTotal] = useState<number>(0);
   const [tab, setTab] = useState<"matched" | "all">("matched");
-
-  // Refs always hold the latest values — no stale closures
   const searchRef = useRef(search);
   const pageRef = useRef(page);
   useEffect(() => {
@@ -73,17 +69,12 @@ export function useJobs() {
       setTotal(allRes.data.total || 0);
       setStats(statsRes.data);
     } catch {
-      // silently fail — existing state stays visible
     }
   }
-
-  // Initial load
   useEffect(() => {
     setLoading(true);
     fetchData().finally(() => setLoading(false));
   }, []);
-
-  // Search debounce
   const isFirstRender = useRef(true);
   useEffect(() => {
     if (isFirstRender.current) {
@@ -96,8 +87,6 @@ export function useJobs() {
     }, 350);
     return () => clearTimeout(t);
   }, [search]);
-
-  // Page change
   const isFirstPage = useRef(true);
   useEffect(() => {
     if (isFirstPage.current) {

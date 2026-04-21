@@ -22,7 +22,6 @@ export function useSettings() {
     try {
       await api.post("/auth/logout/");
     } catch {
-      //logout failed
     } finally {
       router.push("/login");
     }

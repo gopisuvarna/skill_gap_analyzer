@@ -140,9 +140,9 @@ function renderInline(text: string): React.ReactNode {
     return <React.Fragment key={key}>{token.value}</React.Fragment>;
   });
 }
-const HR_RE = /^[=-]{3,}$/; // S6535: \- → - (no escape needed in class)
+const HR_RE = /^[=-]{3,}$/;
 const OL_RE = /^\d+[.)]\s/;
-const NESTED_LI_RE = /^\s{2,}[*-]\s/; // S6535: \- → -
+const NESTED_LI_RE = /^\s{2,}[*-]\s/;
 
 function renderHeading(
   trimmed: string,

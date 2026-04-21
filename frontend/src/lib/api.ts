@@ -9,8 +9,6 @@ export const api: AxiosInstance = axios.create({
     "Content-Type": "application/json",
   },
 });
-
-// ── redirect helper ────────────────────────────────────────────────
 function redirectToLogin() {
   if (
     globalThis.window !== undefined &&
@@ -19,8 +17,6 @@ function redirectToLogin() {
     globalThis.window.location.href = "/login";
   }
 }
-
-// ── response interceptor ───────────────────────────────────────────
 let isRefreshing = false;
 let refreshQueue: Array<() => void> = [];
 
@@ -29,8 +25,6 @@ api.interceptors.response.use(
   async (error) => {
     const status = error.response?.status;
     const originalRequest = error.config;
-
-    // Do not attempt refresh for login/register requests
     if (
       (status === 401 || status === 403) &&
       !originalRequest?._retry &&
@@ -50,8 +44,6 @@ api.interceptors.response.use(
 
       try {
         await api.post("/auth/refresh/");
-
-        // retry queued requests
         refreshQueue.forEach((cb) => cb());
         refreshQueue = [];
 
@@ -68,14 +60,9 @@ api.interceptors.response.use(
     throw error;
   },
 );
-
-// ── session check when user returns to tab ─────────────────────────
 if (globalThis.window !== undefined) {
   const checkSessionOnFocus = async () => {
-    // Skip on login page
     if (globalThis.window.location.pathname === "/login") return;
-
-    // Only check session if cookies exist
     const hasAuthCookie =
       document.cookie.includes("access") || document.cookie.includes("refresh");
 
@@ -84,17 +71,12 @@ if (globalThis.window !== undefined) {
     try {
       await api.get("/auth/me/");
     } catch {
-      // interceptor handles redirect
     }
   };
-
-  // when tab becomes active
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible") {
       checkSessionOnFocus();
     }
   });
-
-  // when window regains focus
   globalThis.window.addEventListener("focus", checkSessionOnFocus);
 }
