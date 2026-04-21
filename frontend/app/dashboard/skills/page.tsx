@@ -4,8 +4,6 @@ import { useState } from "react";
 import { useSkills } from "@/hooks/useSkills";
 import { useUploadResult } from "../upload-result-context";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
-
-// Animation delay step constant
 const ANIM_STEP = 0.03;
 
 export default function SkillsPage() {
@@ -20,17 +18,13 @@ export default function SkillsPage() {
     try {
       await addSkill(newSkill);
       setNewSkill("");
-    } catch {
-      /* ignore */
-    }
+    } catch 
   }
 
   async function handleRemove(id: string) {
     try {
       await removeSkill(id);
-    } catch {
-      /* ignore */
-    }
+    } catch 
   }
 
   if (loading) return <LoadingSpinner label="Loading skills…" />;
@@ -44,7 +38,7 @@ export default function SkillsPage() {
 
   return (
     <div className="space-y-8 max-w-3xl">
-      {/* Header */}
+      
       <div>
         <h1 className="font-display" style={{ marginBottom: "0.35rem" }}>
           Skills
@@ -54,7 +48,7 @@ export default function SkillsPage() {
         </p>
       </div>
 
-      {/* Resume-extracted skills */}
+      
       {extractedSkills.length > 0 && (
         <div className="card card-md anim-fade-up">
           <div className="flex items-center gap-2 mb-4">
@@ -80,7 +74,7 @@ export default function SkillsPage() {
         </div>
       )}
 
-      {/* Manually added skills */}
+      
       <div className="card card-md anim-fade-up delay-1">
         <div className="flex items-center gap-2 mb-4">
           <span className="text-base">🛠</span>
@@ -90,7 +84,7 @@ export default function SkillsPage() {
           <span className="ml-auto badge badge-brand">{skills.length}</span>
         </div>
 
-        {/* Add skill form — FIX: button shows loading state while adding */}
+        
         <form onSubmit={handleAdd} className="flex gap-2 mb-5">
           <input
             type="text"
@@ -147,7 +141,7 @@ export default function SkillsPage() {
                 className="skill-tag inline-flex items-center gap-1.5 anim-fade-up"
                 style={{ animationDelay: `${i * ANIM_STEP}s` }}
               >
-                {/* FIX: show spinner on the skill being removed */}
+                
                 {removingId === s.id ? (
                   <svg
                     className="animate-spin w-3 h-3 color-muted"
@@ -171,7 +165,7 @@ export default function SkillsPage() {
                   </svg>
                 ) : null}
                 {s.skill_name}
-                {/* FIX: removed onMouseOver/onMouseOut — handled by CSS .skill-remove-btn:hover */}
+                
                 <button
                   onClick={() => handleRemove(s.id)}
                   disabled={removingId === s.id}

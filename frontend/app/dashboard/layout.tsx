@@ -61,7 +61,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <UploadResultProvider>
       <div className="flex min-h-screen">
-        {/* ── Desktop sidebar ─────────────────────────────── */}
+        
         <aside className="sidebar hidden lg:flex">
           <div className="sidebar-logo-area">
             <LogoMark />
@@ -71,7 +71,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           </nav>
         </aside>
 
-        {/* ── Mobile overlay ───────────────────────────────── */}
+        
         {mobileOpen && (
           <button
             type="button"
@@ -81,7 +81,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           />
         )}
 
-        {/* ── Mobile drawer ────────────────────────────────── */}
+        
         <div
           className={`mobile-drawer lg:hidden fixed inset-y-0 left-0 z-50 transition-transform duration-300 ${
             mobileOpen ? "mobile-drawer-open" : "mobile-drawer-closed"
@@ -102,9 +102,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           </nav>
         </div>
 
-        {/* ── Main content ─────────────────────────────────── */}
+        
         <div className="flex flex-col flex-1 min-w-0">
-          {/* Mobile topbar */}
+          
           <header className="mobile-topbar lg:hidden sticky top-0 z-30 flex items-center gap-3 px-4 py-3">
             <button
               className="hamburger-btn"
@@ -129,7 +129,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             <div className="mobile-topbar-logo ml-auto">S</div>
           </header>
 
-          {/* Page content */}
+          
           <main className="flex-1 p-4 sm:p-8">
             <div className="max-w-[1100px] mx-auto">{children}</div>
           </main>

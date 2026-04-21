@@ -104,7 +104,6 @@ function parseMarkdownLink(
 
 function renderInline(text: string): React.ReactNode {
   return splitInlineTokens(text).map((token, idx) => {
-    // S6479: stable key = position + first chars of content
     const key = `${idx}-${token.value.slice(0, 12)}`;
 
     if (token.type === "bold")
@@ -141,9 +140,6 @@ function renderInline(text: string): React.ReactNode {
     return <React.Fragment key={key}>{token.value}</React.Fragment>;
   });
 }
-
-/* ── MarkdownMessage helpers (S3776: reduce cognitive complexity) ── */
-
 const HR_RE = /^[=-]{3,}$/; // S6535: \- → - (no escape needed in class)
 const OL_RE = /^\d+[.)]\s/;
 const NESTED_LI_RE = /^\s{2,}[*-]\s/; // S6535: \- → -
@@ -183,7 +179,6 @@ function renderUnorderedList(
       style={{ margin: "0.2rem 0", padding: 0, listStyle: "none" }}
     >
       {items.map((item) => (
-        // S6479: stable key = item content
         <li key={item} className="flex gap-1.5 mb-0.5 items-start">
           <span className="md-bullet">•</span>
           <span className="md-li-text">{renderInline(item)}</span>
@@ -200,7 +195,6 @@ function renderOrderedList(items: string[], baseKey: number): React.ReactNode {
       style={{ margin: "0.2rem 0", padding: 0, listStyle: "none" }}
     >
       {items.map((item, idx) => (
-        // S6479: stable key = position + content
         <li
           key={`${idx}-${item.slice(0, 12)}`}
           className="flex gap-2 mb-0.5 items-start"
@@ -243,8 +237,6 @@ function collectOrderedItems(
   }
   return { items, end: i };
 }
-
-// S3776 + S6759: extracted parsing logic; props marked readonly
 function parseLine(
   lines: string[],
   i: number,
@@ -270,8 +262,6 @@ function parseLine(
     elements.push(renderHeading(trimmed, 1, i));
     return i + 1;
   }
-
-  // S6594: use RegExp.exec()
   if (HR_RE.exec(trimmed)) {
     elements.push(<hr key={i} className="md-hr" />);
     return i + 1;
@@ -282,15 +272,11 @@ function parseLine(
     elements.push(renderUnorderedList(items, i));
     return end;
   }
-
-  // S6594: use RegExp.exec()
   if (OL_RE.exec(trimmed)) {
     const { items, end } = collectOrderedItems(lines, i);
     elements.push(renderOrderedList(items, i));
     return end;
   }
-
-  // S6594: use RegExp.exec()
   if (NESTED_LI_RE.exec(line)) {
     elements.push(
       <li
@@ -312,8 +298,6 @@ function parseLine(
   );
   return i + 1;
 }
-
-// S6759: mark props as read-only
 interface MarkdownMessageProps {
   readonly content: string;
 }
@@ -327,8 +311,6 @@ function MarkdownMessage({ content }: MarkdownMessageProps) {
   }
   return <div style={{ fontSize: "0.875rem" }}>{elements}</div>;
 }
-
-/* ── Page ─────────────────────────────────────────────────── */
 const SUGGESTIONS = [
   "What skills am I missing for my top role?",
   "Give me a learning roadmap for Docker",
@@ -343,7 +325,7 @@ export default function ChatPage() {
 
   return (
     <div className="flex flex-col h-[calc(100vh-5rem)] max-w-3xl mx-auto">
-      {/* Header */}
+      
       <div className="flex items-center gap-3 pb-4 mb-4 chat-header-border">
         <div className="w-9 h-9 rounded-lg flex items-center justify-center text-sm chat-header-icon">
           ✦
@@ -354,14 +336,14 @@ export default function ChatPage() {
             Ask about skills, paths, or job readiness
           </p>
         </div>
-        {/* S6772: explicit space between sibling spans avoided by using flex gap */}
+        
         <div className="ml-auto flex items-center gap-1.5 text-xs chat-online">
           <span className="w-1.5 h-1.5 rounded-full chat-online-dot" />
           <span>Online</span>
         </div>
       </div>
 
-      {/* Messages */}
+      
       <div className="flex-1 overflow-y-auto space-y-4 pr-1">
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full gap-4 pb-8">
@@ -376,7 +358,7 @@ export default function ChatPage() {
               career transitions, job readiness, or anything career-related.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-sm mt-2">
-              {/* S6479: suggestion text is unique — use it directly as key */}
+              
               {SUGGESTIONS.map((q) => (
                 <button
                   key={q}
@@ -389,7 +371,6 @@ export default function ChatPage() {
             </div>
           </div>
         ) : (
-          // S6479: use role + first 20 chars of content as stable key
           messages.map((m, i) => (
             <div
               key={`${m.role}-${m.content.slice(0, 20)}-${i}`}
@@ -430,7 +411,7 @@ export default function ChatPage() {
             </div>
             <div className="rounded-2xl px-4 py-3 chat-typing-bubble">
               <span className="flex gap-1 items-center">
-                {/* S6479: use named string IDs, not array index */}
+                
                 {TYPING_DOTS.map((id, j) => (
                   <span
                     key={id}
@@ -448,7 +429,7 @@ export default function ChatPage() {
         <div ref={bottomRef} />
       </div>
 
-      {/* Input */}
+      
       <form onSubmit={send} className="flex gap-2 mt-4 pt-4 chat-header-border">
         <input
           type="text"

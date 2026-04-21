@@ -21,7 +21,7 @@ export default function SettingsPage() {
         </p>
       </div>
 
-      {/* Account card */}
+      
       <div className="card card-md anim-fade-up">
         <p className="section-label">Account Details</p>
 
@@ -42,8 +42,7 @@ export default function SettingsPage() {
         <div className="space-y-0.5">
           {[
             { label: "Email", value: user?.email },
-            /* FIX: removed `as any` — User type already has id: string in auth.ts */
-            {
+{
               label: "Account ID",
               value: (
                 <code className="text-xs font-mono color-muted">
@@ -65,7 +64,7 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* Session card */}
+      
       <div className="card card-md anim-fade-up delay-1 settings-danger-card">
         <p className="section-label color-error">Session</p>
         <div className="flex items-center justify-between gap-4">

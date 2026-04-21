@@ -44,8 +44,6 @@ function getScoreColor(pct: number): string {
 function pluralSuffix(count: number): string {
   return count === 1 ? "" : "s";
 }
-
-/* ── Stat card ────────────────────────────────────────────── */
 function StatCard({ label, value, sub, color }: StatCardProps) {
   return (
     <div className="card card-sm anim-fade-up">
@@ -57,8 +55,6 @@ function StatCard({ label, value, sub, color }: StatCardProps) {
     </div>
   );
 }
-
-/* ── Progress ring ────────────────────────────────────────── */
 function ProgressRing({ score }: ProgressRingProps) {
   const pct = Math.round(score * 100);
   const r = 36;
@@ -108,8 +104,6 @@ function ProgressRing({ score }: ProgressRingProps) {
     </div>
   );
 }
-
-/* ── Skill badge ──────────────────────────────────────────── */
 function SkillBadge({ name, importance }: SkillBadgeProps) {
   const isHigh = importance >= 0.8;
   const isMed = importance >= 0.5;
@@ -150,8 +144,6 @@ function SkillBadge({ name, importance }: SkillBadgeProps) {
     </span>
   );
 }
-
-/* ── Skill gap group ──────────────────────────────────────── */
 function SkillGapGroup({
   skills,
   expanded,
@@ -177,7 +169,7 @@ function SkillGapGroup({
 
   return (
     <div className="space-y-3">
-      {/* Legend */}
+      
       <div
         className="flex items-center gap-3 flex-wrap color-muted"
         style={{ fontSize: "0.68rem" }}
@@ -211,7 +203,7 @@ function SkillGapGroup({
         )}
       </div>
 
-      {/* Grouped badges */}
+      
       <div className="space-y-2">
         {visibleHigh.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
@@ -277,8 +269,6 @@ function SkillGapGroup({
     </div>
   );
 }
-
-/* ── Page ─────────────────────────────────────────────────── */
 const SKILLS_VISIBLE = 8;
 
 export default function DashboardPage() {
@@ -311,7 +301,7 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-10">
-      {/* Header */}
+      
       <div className="anim-fade-up">
         <h1 className="font-display" style={{ marginBottom: "0.25rem" }}>
           Career Overview
@@ -321,7 +311,7 @@ export default function DashboardPage() {
         </p>
       </div>
 
-      {/* Stat row */}
+      
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <ProgressRing score={data.match_score} />
         <StatCard
@@ -344,7 +334,7 @@ export default function DashboardPage() {
         />
       </div>
 
-      {/* Skills */}
+      
       <section className="anim-fade-up delay-1">
         <div className="flex items-center justify-between mb-3">
           <div className="section-label flex items-center gap-2">
@@ -387,7 +377,7 @@ export default function DashboardPage() {
         )}
       </section>
 
-      {/* Top roles */}
+      
       {data.top_roles?.length > 0 && (
         <section className="anim-fade-up delay-2">
           <div className="flex items-center justify-between mb-3">
@@ -437,7 +427,7 @@ export default function DashboardPage() {
         </section>
       )}
 
-      {/* Skill gaps by role */}
+      
       {sortedGaps.length > 0 && (
         <section className="anim-fade-up delay-2">
           <div className="section-label flex items-center gap-2 mb-3">
@@ -450,7 +440,7 @@ export default function DashboardPage() {
             </span>
           </div>
           <div className="space-y-3">
-            {/* Top priority gap */}
+            
             {(() => {
               const roleGap = sortedGaps[0];
               const skills = roleGap.learning_priority?.length
@@ -499,7 +489,7 @@ export default function DashboardPage() {
               );
             })()}
 
-            {/* Remaining gaps */}
+            
             {sortedGaps.length > 1 && (
               <>
                 {rolesExpanded &&
@@ -577,9 +567,9 @@ export default function DashboardPage() {
         </section>
       )}
 
-      {/* Learning + Jobs */}
+      
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* Learning plan */}
+        
         <section className="anim-fade-up delay-3">
           <div className="section-label flex items-center gap-2 mb-3">
             <span>📚</span> Learning Recommendations
@@ -625,7 +615,7 @@ export default function DashboardPage() {
           )}
         </section>
 
-        {/* Job matches */}
+        
         {data.job_matches?.length > 0 && (
           <section className="anim-fade-up delay-4">
             <div className="flex items-center justify-between mb-3">

@@ -3,8 +3,6 @@
 import { useJobs } from "@/hooks/useJobs";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import type { Job } from "@/hooks/useJobs";
-
-/* ── Helpers ─────────────────────────────────────────────── */
 function formatSalary(min: number | null, max: number | null): string | null {
   if (!min && !max) return null;
   const fmt = (n: number) =>
@@ -26,25 +24,17 @@ function timeAgo(iso: string): string {
   if (d < 30) return `${d}d ago`;
   return `${Math.floor(d / 30)}mo ago`;
 }
-
-// S3358: extracted to replace nested ternaries at lines 89 & 105
 function getMatchColor(pct: number): string {
   if (pct >= 70) return "var(--success)";
   if (pct >= 40) return "var(--brand-500)";
   return "var(--warning)";
 }
-
-// S3358: extracted to replace nested ternary at line 269
 function getEmptyDescription(tab: "matched" | "all", search: string): string {
   if (tab === "matched")
     return "Upload your resume or add skills to see matches.";
   if (search) return "Try a different search term.";
   return "Jobs will appear after the next sync.";
 }
-
-/* ── Job card ─────────────────────────────────────────────── */
-
-// S6759: props marked as read-only
 interface JobCardProps {
   readonly job: Job;
   readonly showMatch?: boolean;
@@ -103,13 +93,13 @@ function JobCard({ job, showMatch }: JobCardProps) {
           <div className="mt-2">
             <div className="flex justify-between text-xs mb-1 color-muted">
               <span>Skill match</span>
-              {/* S3358: color resolved by getMatchColor — no nested ternary */}
+              
               <span className="font-semibold" style={{ color: matchColor }}>
                 {matchPct}%
               </span>
             </div>
             <div className="h-1.5 rounded-full overflow-hidden match-bar-track">
-              {/* S3358: background resolved by getMatchColor — no nested ternary */}
+              
               <div
                 className="h-full rounded-full"
                 style={{
@@ -147,10 +137,6 @@ function JobCard({ job, showMatch }: JobCardProps) {
     </a>
   );
 }
-
-/* ── Search bar ───────────────────────────────────────────── */
-
-// S6759: props marked as read-only
 interface SearchBarProps {
   readonly value: string;
   readonly onChange: (v: string) => void;
@@ -173,9 +159,6 @@ function SearchBar({ value, onChange }: SearchBarProps) {
     </div>
   );
 }
-
-/* ── Sub-components extracted to reduce JobsPage cognitive complexity (S3776) ── */
-
 interface StatsTextProps {
   readonly stats: ReturnType<typeof useJobs>["stats"];
 }
@@ -202,8 +185,6 @@ function StatsText({ stats }: StatsTextProps) {
     </>
   );
 }
-
-// S3358: nested ternaries at lines 260 & 269 extracted into this component + getEmptyDescription()
 interface EmptyStateProps {
   readonly tab: "matched" | "all";
   readonly search: string;
@@ -250,8 +231,6 @@ function Pagination({ page, totalPages, setPage }: PaginationProps) {
     </div>
   );
 }
-
-// S3358: nested ternary (loading ? … : length===0 ? … : …) extracted into component
 interface JobsContentProps {
   readonly loading: boolean;
   readonly displayJobs: Job[];
@@ -272,8 +251,6 @@ function JobsContent({ loading, displayJobs, tab, search }: JobsContentProps) {
     </div>
   );
 }
-
-/* ── Page ─────────────────────────────────────────────────── */
 export default function JobsPage() {
   const {
     matched,
@@ -294,7 +271,7 @@ export default function JobsPage() {
 
   return (
     <div className="space-y-6 max-w-3xl">
-      {/* Header */}
+      
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="font-display" style={{ marginBottom: "0.25rem" }}>
@@ -327,7 +304,7 @@ export default function JobsPage() {
 
       <SearchBar value={search} onChange={setSearch} />
 
-      {/* Tabs */}
+      
       <div className="flex gap-2">
         {(["matched", "all"] as const).map((t) => (
           <button
@@ -342,7 +319,7 @@ export default function JobsPage() {
         ))}
       </div>
 
-      {/* List */}
+      
       <JobsContent
         loading={loading}
         displayJobs={displayJobs}
@@ -350,7 +327,7 @@ export default function JobsPage() {
         search={search}
       />
 
-      {/* Pagination */}
+      
       {tab === "all" && totalPages > 1 && (
         <Pagination page={page} totalPages={totalPages} setPage={setPage} />
       )}

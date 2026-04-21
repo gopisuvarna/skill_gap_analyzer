@@ -10,7 +10,7 @@ export default function DocumentsPage() {
 
   return (
     <div className="max-w-2xl mx-auto">
-      {/* Header */}
+      
       <div className="mb-8">
         <h1 className="font-display" style={{ marginBottom: "0.35rem" }}>
           Upload Resume
@@ -22,7 +22,7 @@ export default function DocumentsPage() {
       </div>
 
       <div className="card card-auth">
-        {/* FIX: removed onMouseOver/onMouseOut JS hover — handled by CSS .dropzone:hover */}
+        
         <label
           htmlFor="resume-upload"
           className={`flex flex-col items-center justify-center gap-3 w-full rounded-xl py-10 px-6 cursor-pointer transition-all dropzone ${file ? "dropzone-active" : ""}`}
@@ -58,7 +58,7 @@ export default function DocumentsPage() {
           />
         </label>
 
-        {/* Upload button */}
+        
         <button
           onClick={handleUpload}
           disabled={loading || !file}
@@ -71,7 +71,7 @@ export default function DocumentsPage() {
           )}
         </button>
 
-        {/* Status message */}
+        
         {message && (
           <div
             className={`mt-4 px-4 py-3 rounded-lg text-sm ${success ? "upload-msg-success" : "upload-msg-error"}`}
@@ -80,7 +80,7 @@ export default function DocumentsPage() {
           </div>
         )}
 
-        {/* Quick nav after success */}
+        
         {success && (
           <div
             className="mt-5 pt-4 flex flex-col sm:flex-row gap-3"

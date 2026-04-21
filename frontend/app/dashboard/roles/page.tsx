@@ -3,15 +3,11 @@
 import { useUploadResult } from "../upload-result-context";
 import { useRoles } from "@/hooks/useRoles";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
-
-// S3358: nested ternary extracted into an independent function
 function getMatchColor(pct: number): string {
   if (pct >= 80) return "var(--success)";
   if (pct >= 55) return "var(--brand-500)";
   return "var(--warning)";
 }
-
-// S6759: props marked as read-only
 interface MatchBarProps {
   readonly score: number;
 }
@@ -51,7 +47,7 @@ export default function RolesPage() {
 
   return (
     <div className="space-y-10">
-      {/* Header */}
+      
       <div>
         <h1 className="font-display" style={{ marginBottom: "0.35rem" }}>
           Recommended Roles
@@ -61,7 +57,7 @@ export default function RolesPage() {
         </p>
       </div>
 
-      {/* Resume-derived roles */}
+      
       {fromResume.length > 0 && (
         <section className="anim-fade-up">
           <div className="section-label flex items-center gap-2 mb-3">
@@ -69,7 +65,6 @@ export default function RolesPage() {
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {fromResume.map((r, i) => (
-              // S6479: use role name as stable key instead of array index
               <div
                 key={r.role}
                 className={`card card-sm anim-fade-up delay-${Math.min(i + 1, 5)}`}
@@ -100,7 +95,7 @@ export default function RolesPage() {
         </section>
       )}
 
-      {/* Profile-based roles */}
+      
       <section className="anim-fade-up delay-2">
         <div className="section-label flex items-center gap-2 mb-3">
           <span>👤</span> Based on your profile

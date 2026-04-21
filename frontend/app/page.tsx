@@ -3,10 +3,8 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-// defines the home page component and created router instance for navigation
 export default function Home() {
   const router = useRouter();
-  // checks for the presence of an access token in the cookies and redirects to the dashboard if found
   useEffect(() => {
     const token = document.cookie.includes("access_token");
     if (token) router.replace("/dashboard");
@@ -14,7 +12,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4 py-16 relative overflow-hidden">
-      {/* Background decoration */}
+      
       <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
         <div
           className="absolute -top-32 -left-32 w-96 h-96 rounded-full"
@@ -33,7 +31,7 @@ export default function Home() {
       </div>
 
       <div className="relative z-10 text-center max-w-2xl mx-auto anim-fade-up">
-        {/* Eyebrow */}
+        
         <span
           className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold tracking-widest uppercase mb-6"
           style={{
@@ -49,7 +47,7 @@ export default function Home() {
           AI-Powered Career Platform
         </span>
 
-        {/* Heading */}
+        
         <h1
           className="mb-4"
           style={{
@@ -80,7 +78,7 @@ export default function Home() {
           readiness — all in one intelligent platform.
         </p>
 
-        {/* CTA Buttons */}
+        
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link href="/login" className="btn btn-primary text-base px-8">
             Sign In
@@ -90,7 +88,7 @@ export default function Home() {
           </Link>
         </div>
 
-        {/* Feature highlights */}
+        
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-16">
           {[
             { icon: "🎯", label: "Skill Gap Analysis" },
