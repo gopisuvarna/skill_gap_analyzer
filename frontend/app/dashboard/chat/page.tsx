@@ -3,52 +3,143 @@
 import { useChat } from "@/hooks/useChat";
 import React from "react";
 
-const INLINE_SPLIT_RE = /(\*\*[^*]+\*\*|`[^`]+`|\[[^\]]+\]\([^)]+\))/g;
-const LINK_RE = /^\[([^\]]+)\]\(([^)]+)\)$/;
+type InlineToken =
+  | { type: "text"; value: string }
+  | { type: "bold"; value: string }
+  | { type: "code"; value: string }
+  | { type: "link"; value: string };
+
+type TokenReadResult = { token: InlineToken; nextIndex: number } | null;
+
+function readBoldToken(text: string, index: number): TokenReadResult {
+  if (!text.startsWith("**", index)) return null;
+  const end = text.indexOf("**", index + 2);
+  if (end <= index + 2) return null;
+  return {
+    token: { type: "bold", value: text.slice(index + 2, end) },
+    nextIndex: end + 2,
+  };
+}
+
+function readCodeToken(text: string, index: number): TokenReadResult {
+  if (text[index] !== "`") return null;
+  const end = text.indexOf("`", index + 1);
+  if (end <= index + 1) return null;
+  return {
+    token: { type: "code", value: text.slice(index + 1, end) },
+    nextIndex: end + 1,
+  };
+}
+
+function readLinkToken(text: string, index: number): TokenReadResult {
+  if (text[index] !== "[") return null;
+  const closeLabel = text.indexOf("]", index + 1);
+  if (closeLabel === -1 || text[closeLabel + 1] !== "(") return null;
+  const closeUrl = text.indexOf(")", closeLabel + 2);
+  if (closeUrl <= closeLabel + 2) return null;
+  return {
+    token: { type: "link", value: text.slice(index, closeUrl + 1) },
+    nextIndex: closeUrl + 1,
+  };
+}
+
+function findNextSpecialIndex(text: string, index: number): number {
+  let next = index + 1;
+  while (next < text.length) {
+    if (
+      text.startsWith("**", next) ||
+      text[next] === "`" ||
+      text[next] === "["
+    ) {
+      return next;
+    }
+    next++;
+  }
+  return next;
+}
+
+function readSpecialToken(text: string, index: number): TokenReadResult {
+  return (
+    readBoldToken(text, index) ??
+    readCodeToken(text, index) ??
+    readLinkToken(text, index)
+  );
+}
+
+function splitInlineTokens(text: string): InlineToken[] {
+  const tokens: InlineToken[] = [];
+  let i = 0;
+
+  while (i < text.length) {
+    const special = readSpecialToken(text, i);
+    if (special) {
+      tokens.push(special.token);
+      i = special.nextIndex;
+      continue;
+    }
+
+    const next = findNextSpecialIndex(text, i);
+    tokens.push({ type: "text", value: text.slice(i, next) });
+    i = next;
+  }
+
+  return tokens.filter((token) => token.value.length > 0);
+}
+
+function parseMarkdownLink(
+  token: string,
+): { label: string; href: string } | null {
+  if (!token.startsWith("[") || !token.endsWith(")")) return null;
+
+  const closeLabel = token.indexOf("]");
+  if (closeLabel <= 1) return null;
+  if (token[closeLabel + 1] !== "(") return null;
+
+  const label = token.slice(1, closeLabel);
+  const href = token.slice(closeLabel + 2, -1);
+  if (!href) return null;
+
+  return { label, href };
+}
 
 function renderInline(text: string): React.ReactNode {
-  return text
-    .split(INLINE_SPLIT_RE)
-    .filter(Boolean)
-    .map((part, idx) => {
-      // S6479: stable key = position + first chars of content
-      const key = `${idx}-${part.slice(0, 12)}`;
+  return splitInlineTokens(text).map((token, idx) => {
+    // S6479: stable key = position + first chars of content
+    const key = `${idx}-${token.value.slice(0, 12)}`;
 
-      if (part.startsWith("**") && part.endsWith("**"))
-        return (
-          <strong
-            key={key}
-            className="color-primary"
-            style={{ fontWeight: 600 }}
-          >
-            {part.slice(2, -2)}
-          </strong>
-        );
+    if (token.type === "bold")
+      return (
+        <strong key={key} className="color-primary" style={{ fontWeight: 600 }}>
+          {token.value}
+        </strong>
+      );
 
-      if (part.startsWith("`") && part.endsWith("`"))
-        return (
-          <code key={key} className="md-code">
-            {part.slice(1, -1)}
-          </code>
-        );
+    if (token.type === "code")
+      return (
+        <code key={key} className="md-code">
+          {token.value}
+        </code>
+      );
 
-      // S6594: use RegExp.exec() instead of String.match()
-      const link = LINK_RE.exec(part);
-      if (link)
-        return (
-          <a
-            key={key}
-            href={link[2]}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="md-link"
-          >
-            {link[1]}
-          </a>
-        );
+    if (token.type === "link") {
+      const link = parseMarkdownLink(token.value);
+      if (!link)
+        return <React.Fragment key={key}>{token.value}</React.Fragment>;
+      return (
+        <a
+          key={key}
+          href={link.href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="md-link"
+        >
+          {link.label}
+        </a>
+      );
+    }
 
-      return <React.Fragment key={key}>{part}</React.Fragment>;
-    });
+    return <React.Fragment key={key}>{token.value}</React.Fragment>;
+  });
 }
 
 /* ── MarkdownMessage helpers (S3776: reduce cognitive complexity) ── */
