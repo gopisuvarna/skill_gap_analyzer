@@ -28,6 +28,22 @@ def get_or_create_skill(name: str):
     return skill
 
 
+def create_user_skill_response(request):
+    skill_name = request.data.get("name")
+    if not skill_name:
+        return Response(
+            {"detail": "name required"}, status=status.HTTP_400_BAD_REQUEST
+        )
+
+    skill = get_or_create_skill(skill_name)  # embedding saved inside if new
+    us, _ = UserSkill.objects.get_or_create(
+        user=request.user,
+        skill=skill,
+        defaults={"source": "manual"},
+    )
+    return Response(UserSkillSerializer(us).data, status=status.HTTP_201_CREATED)
+
+
 @require_POST
 @csrf_protect
 @api_view(["POST"])
@@ -68,11 +84,13 @@ def extract_from_document(request):
     })
 
 
-@require_GET
 @csrf_protect
-@api_view(["GET"])
+@api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
 def list_user_skills(request):
+    if request.method == "POST":
+        return create_user_skill_response(request)
+
     qs = UserSkill.objects.filter(user=request.user).select_related("skill")
     return Response(UserSkillSerializer(qs, many=True).data)
 
@@ -82,19 +100,7 @@ def list_user_skills(request):
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def add_user_skill(request):
-    skill_name = request.data.get("name")
-    if not skill_name:
-        return Response(
-            {"detail": "name required"}, status=status.HTTP_400_BAD_REQUEST
-        )
-
-    skill = get_or_create_skill(skill_name)  # embedding saved inside if new
-    us, _ = UserSkill.objects.get_or_create(
-        user=request.user,
-        skill=skill,
-        defaults={"source": "manual"},
-    )
-    return Response(UserSkillSerializer(us).data, status=status.HTTP_201_CREATED)
+    return create_user_skill_response(request)
 
 
 @require_http_methods(["DELETE"])
