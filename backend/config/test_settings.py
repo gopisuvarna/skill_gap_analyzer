@@ -9,6 +9,7 @@ SECRET_KEY = os.environ.get("SECRET_KEY", "django-insecure-test-key-for-testing-
 DEBUG = True
 ALLOWED_HOSTS = ['*']
 TESTING = True
+CLIENT_IP_FALLBACK = os.environ.get("CLIENT_IP_FALLBACK", "unknown")
 
 INSTALLED_APPS = [
     'django.contrib.admin',

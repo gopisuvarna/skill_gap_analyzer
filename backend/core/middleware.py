@@ -3,6 +3,7 @@ import json
 import os
 import tempfile
 import time
+from django.conf import settings
 from django.http import JsonResponse
 from django.utils.deprecation import MiddlewareMixin
 
@@ -58,7 +59,7 @@ class RateLimitMiddleware(MiddlewareMixin):
         x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
         if x_forwarded_for:
             return x_forwarded_for.split(',')[0].strip()
-        return request.META.get('REMOTE_ADDR', '127.0.0.1')
+        return request.META.get('REMOTE_ADDR', settings.CLIENT_IP_FALLBACK)
 
 
 class CSRFCookieMiddleware(MiddlewareMixin):

@@ -78,5 +78,3 @@ def fetch_jobs(
                 "Adzuna fetch failed (country=%s, page=%d): %s", country, page, e
             )
             return []
-
-    return []

@@ -17,6 +17,7 @@ env = environ.Env(
     GROQ_API_KEY=(str, ''),
     ADZUNA_APP_ID=(str, ''),
     ADZUNA_API_KEY=(str, ''),
+    CLIENT_IP_FALLBACK=(str, 'unknown'),
 )
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -29,6 +30,7 @@ if not SECRET_KEY:
 
 DEBUG = env('DEBUG')
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS')
+CLIENT_IP_FALLBACK = env('CLIENT_IP_FALLBACK')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
