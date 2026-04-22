@@ -60,6 +60,21 @@ function wrapper({ children }: { children: React.ReactNode }) {
   return <UploadResultProvider>{children}</UploadResultProvider>;
 }
 
+class ErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { message: string | null }
+> {
+  state = { message: null };
+
+  static getDerivedStateFromError(error: Error) {
+    return { message: error.message };
+  }
+
+  render() {
+    return this.state.message ? <div>{this.state.message}</div> : this.props.children;
+  }
+}
+
 describe("frontend hooks, components, and upload context", () => {
   beforeEach(() => {
     jest.useRealTimers();
@@ -98,6 +113,25 @@ describe("frontend hooks, components, and upload context", () => {
     expect(screen.getByText("Loading data")).toBeInTheDocument();
   });
 
+  it("renders auth layout login variant and idle submit button", () => {
+    render(
+      <AuthLayout
+        title="Sign in"
+        subtitle="Welcome back"
+        footerPrompt="New?"
+        footerHref="/register"
+        footerLinkText="Create account"
+        blobVariant="login"
+      >
+        <button>Child action</button>
+      </AuthLayout>,
+    );
+    expect(screen.getByText("Child action")).toBeInTheDocument();
+
+    render(<AuthSubmitButton loading={false} loadingText="Working" idleText="Submit" />);
+    expect(screen.getByRole("button", { name: "Submit" })).not.toBeDisabled();
+  });
+
   it("stores, clears, and guards upload result context", () => {
     const sample: UploadResult = {
       all_skills: ["python"],
@@ -129,6 +163,22 @@ describe("frontend hooks, components, and upload context", () => {
     expect(screen.getByTestId("value")).toHaveTextContent("empty");
 
     expect(screen.queryByText("python")).not.toBeInTheDocument();
+  });
+
+  it("shows a clear error when upload result hook is used outside provider", () => {
+    function MisusedConsumer() {
+      useUploadResult();
+      return <div />;
+    }
+
+    const consoleError = jest.spyOn(console, "error").mockImplementation(() => {});
+    render(
+      <ErrorBoundary>
+        <MisusedConsumer />
+      </ErrorBoundary>,
+    );
+    expect(screen.getByText("useUploadResult must be used within UploadResultProvider")).toBeInTheDocument();
+    consoleError.mockRestore();
   });
 
   it("sends chat messages and appends success or fallback responses", async () => {
@@ -200,6 +250,14 @@ describe("frontend hooks, components, and upload context", () => {
     const fallback = renderHook(() => useDashboard());
     await waitFor(() => expect(fallback.result.current.loading).toBe(false));
     expect(fallback.result.current.data?.top_roles[0].title).toBe("Frontend Developer");
+  });
+
+  it("returns null dashboard data when the dashboard request fails", async () => {
+    mockApi.get.mockRejectedValueOnce(new Error("dashboard failed"));
+    const { result } = renderHook(() => useDashboard());
+
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.data).toBeNull();
   });
 
   it("loads jobs, supports search/page refresh, and switches display tabs", async () => {
@@ -305,6 +363,14 @@ describe("frontend hooks, components, and upload context", () => {
       await result.current.removeSkill("s1");
     });
     expect(mockApi.delete).toHaveBeenCalledWith("/skills/s1/");
+  });
+
+  it("falls back to an empty skill list when loading skills fails", async () => {
+    mockApi.get.mockRejectedValueOnce(new Error("skills failed"));
+    const { result } = renderHook(() => useSkills());
+
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.skills).toEqual([]);
   });
 
   it("validates and uploads resumes through upload hook", async () => {
