@@ -23,11 +23,8 @@ function parseSkillSet(skills: string): Set<string> {
       .filter(Boolean),
   );
 }
-function computeScore(
-  required: Set<string> | string[],
-  userSkillNames: Set<string>,
-): number | null {
-  const req = Array.isArray(required) ? required : [...required];
+function computeScore(required: Set<string>, userSkillNames: Set<string>): number | null {
+  const req = [...required];
   if (req.length === 0) return null;
   const matched = req.filter((s) => userSkillNames.has(s.toLowerCase())).length;
   return matched / req.length;

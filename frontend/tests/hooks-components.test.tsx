@@ -295,6 +295,22 @@ describe("frontend hooks, components, and upload context", () => {
     expect(mockApi.get).toHaveBeenCalledWith("/jobs/?page=2&per_page=15&q=react");
   });
 
+  it("uses jobs fallback values when the API omits results and totals", async () => {
+    mockApi.get
+      .mockResolvedValueOnce({ data: {} })
+      .mockResolvedValueOnce({ data: {} })
+      .mockResolvedValueOnce({ data: null });
+
+    const { result } = renderHook(() => useJobs());
+
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.matched).toEqual([]);
+    expect(result.current.allJobs).toEqual([]);
+    expect(result.current.total).toBe(0);
+    expect(result.current.stats).toBeNull();
+    expect(result.current.totalPages).toBe(0);
+  });
+
   it("opens and closes mobile nav while locking body scroll", () => {
     const hook = renderHook(() => useMobileNav());
     act(() => hook.result.current.openMenu());
@@ -354,6 +370,14 @@ describe("frontend hooks, components, and upload context", () => {
     expect(mockPush).toHaveBeenCalledWith("/login");
   });
 
+  it("leaves settings user empty when the profile request fails", async () => {
+    mockApi.get.mockRejectedValueOnce(new Error("me failed"));
+    const { result } = renderHook(() => useSettings());
+
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.user).toBeNull();
+  });
+
   it("loads, adds, removes, and validates skills", async () => {
     mockApi.get.mockResolvedValue({ data: [{ id: "s1", skill_name: "Python", source: "manual" }] });
     mockApi.post.mockResolvedValue({});
@@ -385,6 +409,18 @@ describe("frontend hooks, components, and upload context", () => {
 
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.skills).toEqual([]);
+  });
+
+  it("clears the skills fallback timer on unmount", async () => {
+    jest.useFakeTimers();
+    mockApi.get.mockReturnValue(new Promise(() => {}));
+
+    const clearTimeoutSpy = jest.spyOn(global, "clearTimeout");
+    const { unmount } = renderHook(() => useSkills());
+    unmount();
+
+    expect(clearTimeoutSpy).toHaveBeenCalled();
+    clearTimeoutSpy.mockRestore();
   });
 
   it("validates and uploads resumes through upload hook", async () => {
@@ -452,5 +488,40 @@ describe("frontend hooks, components, and upload context", () => {
 
     expect(result.current.success).toBe(false);
     expect(result.current.message).toBe("Upload failed. Please try again.");
+  });
+
+  it("fills missing upload payload arrays with empty defaults", async () => {
+    mockApi.post.mockResolvedValueOnce({
+      data: {
+        all_skills: undefined,
+        rule_based_skills: undefined,
+        llm_skills: undefined,
+        recommended_roles: undefined,
+      },
+    });
+
+    function Consumer() {
+      const { uploadResult } = useUploadResult();
+      return <div data-testid="upload-result">{JSON.stringify(uploadResult)}</div>;
+    }
+
+    const { result } = renderHook(() => useUpload(), { wrapper });
+    render(
+      <UploadResultProvider>
+        <Consumer />
+      </UploadResultProvider>,
+    );
+
+    act(() => {
+      result.current.handleFileChange({
+        target: { files: [new File(["pdf"], "resume.pdf", { type: "application/pdf" })] },
+      } as unknown as React.ChangeEvent<HTMLInputElement>);
+    });
+
+    await act(async () => {
+      await result.current.handleUpload();
+    });
+
+    expect(result.current.success).toBe(true);
   });
 });

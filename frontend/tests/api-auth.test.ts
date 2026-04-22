@@ -88,6 +88,20 @@ describe("API client and auth helpers", () => {
     await expect(
       onRejected({ response: { status: 401 }, config: { url: "/auth/login" } }),
     ).rejects.toEqual({ response: { status: 401 }, config: { url: "/auth/login" } });
+
+    await expect(
+      onRejected({ response: { status: 403 }, config: { url: "/auth/register" } }),
+    ).rejects.toEqual({ response: { status: 403 }, config: { url: "/auth/register" } });
+  });
+
+  it("passes through non-auth and already-retried errors", async () => {
+    const { api } = await import("../src/lib/api");
+    const [, onRejected] = api.interceptors.response.use.mock.calls[0];
+    const serverError = { response: { status: 500 }, config: { url: "/private" } };
+    const retriedError = { response: { status: 401 }, config: { url: "/private", _retry: true } };
+
+    await expect(onRejected(serverError)).rejects.toEqual(serverError);
+    await expect(onRejected(retriedError)).rejects.toEqual(retriedError);
   });
 
   it("checks the session on focus and visible-state events when auth cookies exist", async () => {
@@ -132,6 +146,24 @@ describe("API client and auth helpers", () => {
     await focusHandler?.();
     expect(api.get).not.toHaveBeenCalled();
     addWindowListener.mockRestore();
+  });
+
+  it("ignores hidden visibility changes and swallowed session-check failures", async () => {
+    document.cookie = "access=token; path=/";
+    const { api } = await import("../src/lib/api");
+    apiInstance.get.mockRejectedValueOnce(new Error("expired"));
+
+    Object.defineProperty(document, "visibilityState", {
+      configurable: true,
+      value: "hidden",
+    });
+    document.dispatchEvent(new Event("visibilitychange"));
+    await Promise.resolve();
+    expect(api.get).not.toHaveBeenCalled();
+
+    window.dispatchEvent(new Event("focus"));
+    await Promise.resolve();
+    expect(api.get).toHaveBeenCalledWith("/auth/me/");
   });
 
   it("reads csrf tokens from cookies after pinging the backend", async () => {
