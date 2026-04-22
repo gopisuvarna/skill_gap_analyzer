@@ -142,3 +142,35 @@ def test_chatbot_context_uses_faiss_roles_and_db_fallback(user, skill_factory):
         fallback = chatbot_views._build_context(user)
 
     assert "Role: API Engineer" in fallback
+
+
+@pytest.mark.django_db
+def test_top_roles_uses_faiss_candidates_and_attaches_required_skills(user, skill_factory):
+    client = APIClient()
+    client.force_authenticate(user=user)
+    python = skill_factory("Python")
+    sql = skill_factory("SQL")
+    UserSkill.objects.create(user=user, skill=python)
+
+    role = Role.objects.create(title="Backend Engineer", description="Build APIs")
+    RoleSkill.objects.create(role=role, skill=python, importance_weight=0.9)
+    RoleSkill.objects.create(role=role, skill=sql, importance_weight=0.8)
+
+    mock_index = MagicMock()
+    mock_index.search.return_value = [(str(role.id), 0.99)]
+
+    with (
+        patch("apps.recommendations.views.encode_single", return_value=[0.1, 0.2]),
+        patch("apps.recommendations.views.get_faiss_index", return_value=mock_index),
+        patch(
+            "apps.recommendations.views.re_rank",
+            return_value=[{"id": str(role.id), "title": role.title, "description": role.description}],
+        ),
+    ):
+        response = client.get("/api/recommendations/roles/")
+
+    assert response.status_code == 200
+    returned = response.data["roles"][0]
+    assert returned["title"] == "Backend Engineer"
+    assert set(returned["required_skills"]) == {"Python", "SQL"}
+    assert returned["match_score"] == 0.5

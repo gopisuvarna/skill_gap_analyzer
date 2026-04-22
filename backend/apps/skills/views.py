@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.db import transaction
 from django.views.decorators.csrf import csrf_protect
-from django.views.decorators.http import require_POST, require_http_methods
+from django.views.decorators.http import require_GET, require_POST, require_http_methods
 
 from apps.documents.models import Document
 from apps.embeddings.models import SkillEmbedding
@@ -84,13 +84,10 @@ def extract_from_document(request):
     })
 
 
-@csrf_protect
-@api_view(["GET", "POST"])
+@require_GET
+@api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def list_user_skills(request):
-    if request.method == "POST":
-        return create_user_skill_response(request)
-
     qs = UserSkill.objects.filter(user=request.user).select_related("skill")
     return Response(UserSkillSerializer(qs, many=True).data)
 

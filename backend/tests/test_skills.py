@@ -44,7 +44,7 @@ class TestUserSkills(TestCase):
         mock_encode.return_value = [0.1] * 384
         mock_emb.filter.return_value.create.return_value = None
         
-        response = self.client.post('/api/skills/', {'name': 'JavaScript'})
+        response = self.client.post('/api/skills/manual/', {'name': 'JavaScript'})
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.data['skill_name'], 'JavaScript')
     
@@ -52,11 +52,11 @@ class TestUserSkills(TestCase):
         skill = Skill.objects.create(name='Python', normalized_name='python')
         UserSkill.objects.create(user=self.user, skill=skill)
         
-        response = self.client.post('/api/skills/', {'name': 'Python'})
+        response = self.client.post('/api/skills/manual/', {'name': 'Python'})
         self.assertEqual(response.status_code, 201)
     
     def test_add_skill_missing_name(self):
-        response = self.client.post('/api/skills/', {})
+        response = self.client.post('/api/skills/manual/', {})
         self.assertEqual(response.status_code, 400)
 
 
@@ -131,7 +131,7 @@ class TestSkillsUnauthenticated(TestCase):
         self.assertEqual(response.status_code, 403)
     
     def test_add_skill_unauthenticated(self):
-        response = self.client.post('/api/skills/', {'name': 'Python'})
+        response = self.client.post('/api/skills/manual/', {'name': 'Python'})
         self.assertEqual(response.status_code, 403)
 
 
@@ -146,7 +146,7 @@ class TestSkillsEdgeCases(TestCase):
         self.client.force_authenticate(user=self.user)
     
     def test_add_skill_empty_name(self):
-        response = self.client.post('/api/skills/', {'name': ''})
+        response = self.client.post('/api/skills/manual/', {'name': ''})
         self.assertEqual(response.status_code, 400)
     
     @patch('apps.skills.views.extract_skills')

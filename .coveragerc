@@ -1,0 +1,15 @@
+[run]
+omit =
+    backend/manage.py
+    backend/tests/*
+    backend/tests/**
+    backend/config/asgi.py
+    backend/config/wsgi.py
+    backend/config/settings.py
+    backend/config/test_settings.py
+    backend/config/urls.py
+    backend/**/migrations/*
+    backend/**/migrations/**
+
+[report]
+skip_empty = True
