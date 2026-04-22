@@ -25,6 +25,8 @@ describe("API client and auth helpers", () => {
     apiInstance.request.mockReset();
     apiInstance.interceptors.response.use.mockReset();
     document.cookie = "csrftoken=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
+    document.cookie = "access=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
+    document.cookie = "refresh=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
     window.history.pushState({}, "", "/dashboard");
   });
 
@@ -106,6 +108,30 @@ describe("API client and auth helpers", () => {
     document.dispatchEvent(new Event("visibilitychange"));
     await Promise.resolve();
     expect(api.get.mock.calls.length).toBeGreaterThan(callsAfterFocus);
+  });
+
+  it("does not check the session on login pages or without auth cookies", async () => {
+    let focusHandler: (() => Promise<void>) | undefined;
+    const addWindowListener = jest
+      .spyOn(window, "addEventListener")
+      .mockImplementation((event, handler) => {
+        if (event === "focus") {
+          focusHandler = handler as () => Promise<void>;
+        }
+      });
+
+    const { api } = await import("../src/lib/api");
+    apiInstance.get.mockResolvedValue({});
+
+    apiInstance.get.mockClear();
+    await focusHandler?.();
+    expect(api.get).not.toHaveBeenCalled();
+
+    window.history.pushState({}, "", "/login");
+    document.cookie = "refresh=token; path=/";
+    await focusHandler?.();
+    expect(api.get).not.toHaveBeenCalled();
+    addWindowListener.mockRestore();
   });
 
   it("reads csrf tokens from cookies after pinging the backend", async () => {

@@ -117,6 +117,26 @@ def test_refresh_endpoint_handles_token_branches(user):
 
 
 @pytest.mark.django_db
+def test_refresh_returns_csrf_failure_before_decoding_token(user, monkeypatch):
+    _, refresh = _create_tokens(user)
+    factory = APIRequestFactory()
+    request = factory.post("/api/auth/refresh/")
+    request.COOKIES[settings.COOKIE_CONFIG["REFRESH_COOKIE_NAME"]] = refresh
+
+    def reject_csrf(request):
+        from rest_framework import exceptions
+
+        raise exceptions.PermissionDenied("CSRF refresh failed")
+
+    monkeypatch.setattr(account_views, "enforce_csrf", reject_csrf)
+
+    response = account_views.refresh(request)
+
+    assert response.status_code == 403
+    assert response.data["detail"] == "CSRF refresh failed"
+
+
+@pytest.mark.django_db
 def test_login_reports_disabled_account(user):
     user.is_active = False
     user.set_password("secret-pass")
@@ -226,6 +246,37 @@ def test_document_job_sync_helper_handles_success_and_errors(capsys):
         document_views._sync_jobs_for_roles(["Python Developer"])
 
     assert "Background job sync failed: network" in capsys.readouterr().out
+
+
+def test_search_recommended_roles_handles_empty_input_and_maps_results(monkeypatch):
+    assert document_views._search_recommended_roles([]) == []
+
+    manager = MagicMock()
+    manager.search.return_value = [
+        (
+            0.87654,
+            {
+                "role": "Backend Engineer",
+                "description": "Build APIs",
+                "skills": "Python, Django",
+            },
+        )
+    ]
+
+    monkeypatch.setattr(document_views, "encode", lambda skills, normalize=True, return_numpy=True: [[1.0, 0.0], [0.0, 1.0]])
+    monkeypatch.setattr(document_views, "get_role_faiss_manager", lambda: manager)
+
+    roles = document_views._search_recommended_roles(["Python", "Django"])
+
+    assert roles == [
+        {
+            "role": "Backend Engineer",
+            "description": "Build APIs",
+            "skills": "Python, Django",
+            "score": 0.8765,
+        }
+    ]
+    manager.search.assert_called_once()
 
 
 @pytest.mark.django_db

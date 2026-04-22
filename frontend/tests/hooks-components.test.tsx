@@ -327,6 +327,20 @@ describe("frontend hooks, components, and upload context", () => {
     expect(fallback.result.current.fromResume).toEqual([]);
   });
 
+  it("computes zero resume score when a role has no parsed skills", async () => {
+    mockApi.get
+      .mockResolvedValueOnce({ data: { roles: [] } })
+      .mockResolvedValueOnce({ data: { recommended_roles: [] } })
+      .mockResolvedValueOnce({ data: [{ id: "s1", skill_name: "Python" }] });
+
+    const { result } = renderHook(() =>
+      useRoles([{ role: "Empty", description: "", skills: " , ", score: 1 }]),
+    );
+
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.fromResume[0].score).toBe(0);
+  });
+
   it("loads settings and redirects after logout even when logout request fails", async () => {
     mockApi.get.mockResolvedValueOnce({ data: { id: "u1", email: "me@example.com", is_active: true, created_at: "now" } });
     mockApi.post.mockRejectedValueOnce(new Error("logout failed"));
@@ -413,5 +427,30 @@ describe("frontend hooks, components, and upload context", () => {
     });
     expect(result.current.success).toBe(false);
     expect(result.current.message).toBe("Bad PDF");
+  });
+
+  it("ignores empty file selections and uses generic upload failure text", async () => {
+    mockApi.post.mockRejectedValueOnce(new Error("network"));
+    const { result } = renderHook(() => useUpload(), { wrapper });
+
+    act(() => {
+      result.current.handleFileChange({
+        target: { files: [] },
+      } as unknown as React.ChangeEvent<HTMLInputElement>);
+    });
+    expect(result.current.file).toBeNull();
+
+    act(() => {
+      result.current.handleFileChange({
+        target: { files: [new File(["pdf"], "resume.pdf", { type: "application/pdf" })] },
+      } as unknown as React.ChangeEvent<HTMLInputElement>);
+    });
+
+    await act(async () => {
+      await result.current.handleUpload();
+    });
+
+    expect(result.current.success).toBe(false);
+    expect(result.current.message).toBe("Upload failed. Please try again.");
   });
 });
