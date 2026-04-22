@@ -1,4 +1,5 @@
 import axios, { AxiosInstance } from "axios";
+import { getCsrfToken } from "./auth";
 
 const baseURL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
@@ -9,6 +10,19 @@ export const api: AxiosInstance = axios.create({
     "Content-Type": "application/json",
   },
 });
+
+api.interceptors.request.use(async (config) => {
+  const method = config.method?.toLowerCase();
+  if (method && ["post", "put", "patch", "delete"].includes(method)) {
+    const csrfToken = await getCsrfToken();
+    if (csrfToken) {
+      config.headers = config.headers ?? {};
+      config.headers["X-CSRFToken"] = csrfToken;
+    }
+  }
+  return config;
+});
+
 function redirectToLogin() {
   if (
     globalThis.window !== undefined &&

@@ -2,9 +2,43 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Syne:wght@500;600;700;800&display=swap");
+:root {
+  --bg-canvas: #f4f5f7;
+  --bg-surface: #ffffff;
+  --bg-surface-alt: #eef1f7;
+  --text-primary: #1f2433;
+  --text-secondary: #50576b;
+  --text-muted: #8a91ad;
+  --border-subtle: #e4e8f0;
+  --border-medium: #d4dbe7;
+  --border-strong: #b8c2d6;
+  --brand-50: #eef1ff;
+  --brand-100: #dde3ff;
+  --brand-200: #c7d1ff;
+  --brand-300: #a5b4fc;
+  --brand-400: #6e7fd5;
+  --brand-500: #4d5ec7;
+  --brand-600: #3947a8;
+  --accent-100: #daf8f0;
+  --accent-400: #4fd1b5;
+  --accent-500: #2ca58d;
+  --success: #2f7d4c;
+  --warning: #b7791f;
+  --error: #d94040;
+  --radius-md: 10px;
+  --radius-full: 9999px;
+  --shadow-xs: 0 2px 8px rgba(15, 23, 42, 0.06);
+  --shadow-lg: 0 20px 40px rgba(15, 23, 42, 0.16);
+  --transition-fast: 160ms ease;
+}
 
-:root 
+html,
+body {
+  background: var(--bg-canvas);
+  color: var(--text-primary);
+  font-family: var(--font-body), system-ui, sans-serif;
+}
+
 .btn:disabled {
   opacity: 0.55;
   cursor: not-allowed;

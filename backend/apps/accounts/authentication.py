@@ -19,6 +19,9 @@ class JWTCookieAuthentication(authentication.BaseAuthentication):
     """Extract JWT from HTTP-only cookie or Authorization header."""
 
     def authenticate(self, request):
+        if request.path in {"/api/auth/login/", "/api/auth/register/"}:
+            return None
+
         access_name = settings.COOKIE_CONFIG['ACCESS_COOKIE_NAME']
 
         # 1️⃣ Try cookie first

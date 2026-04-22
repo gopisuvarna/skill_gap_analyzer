@@ -3,6 +3,9 @@ const apiInstance = {
   post: jest.fn(),
   request: jest.fn(),
   interceptors: {
+    request: {
+      use: jest.fn(),
+    },
     response: {
       use: jest.fn(),
     },
@@ -23,6 +26,7 @@ describe("API client and auth helpers", () => {
     apiInstance.get.mockReset();
     apiInstance.post.mockReset();
     apiInstance.request.mockReset();
+    apiInstance.interceptors.request.use.mockReset();
     apiInstance.interceptors.response.use.mockReset();
     document.cookie = "csrftoken=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
     document.cookie = "access=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
@@ -32,10 +36,37 @@ describe("API client and auth helpers", () => {
 
   it("creates an axios client and passes successful responses through", async () => {
     const { api } = await import("../src/lib/api");
+    expect(api.interceptors.request.use).toHaveBeenCalled();
     const [onFulfilled] = api.interceptors.response.use.mock.calls[0];
 
     const response = { data: { ok: true } };
     expect(onFulfilled(response)).toBe(response);
+  });
+
+  it("adds the CSRF header for unsafe requests", async () => {
+    global.fetch = jest.fn().mockResolvedValue({ ok: true }) as jest.Mock;
+    document.cookie = "csrftoken=test-token; path=/";
+
+    const { api } = await import("../src/lib/api");
+    const [onRequest] = api.interceptors.request.use.mock.calls[0];
+    const config = await onRequest({ method: "post", headers: {} });
+
+    expect(global.fetch).toHaveBeenCalledWith(
+      "http://localhost:8000/api/auth/me/",
+      { credentials: "include" },
+    );
+    expect(config.headers["X-CSRFToken"]).toBe("test-token");
+  });
+
+  it("skips the CSRF lookup for safe requests", async () => {
+    global.fetch = jest.fn() as jest.Mock;
+
+    const { api } = await import("../src/lib/api");
+    const [onRequest] = api.interceptors.request.use.mock.calls[0];
+    const config = await onRequest({ method: "get", headers: {} });
+
+    expect(global.fetch).not.toHaveBeenCalled();
+    expect(config.headers["X-CSRFToken"]).toBeUndefined();
   });
 
   it("refreshes once on auth errors and retries the original request", async () => {

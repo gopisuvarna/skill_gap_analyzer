@@ -1,44 +1,49 @@
 "use client";
 
 import { useState } from "react";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { useSkills } from "@/hooks/useSkills";
 import { useUploadResult } from "../upload-result-context";
-import { LoadingSpinner } from "@/components/LoadingSpinner";
+
 const ANIM_STEP = 0.03;
 
 export default function SkillsPage() {
-  const { skills, loading, adding, removingId, addSkill, removeSkill } =
-    useSkills();
+  const { skills, loading, adding, removingId, addSkill, removeSkill } = useSkills();
   const { uploadResult } = useUploadResult();
   const [newSkill, setNewSkill] = useState("");
 
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
     if (!newSkill.trim()) return;
+
     try {
       await addSkill(newSkill);
       setNewSkill("");
-    } catch 
+    } catch {
+      // Hook state stays consistent on failure.
+    }
   }
 
   async function handleRemove(id: string) {
     try {
       await removeSkill(id);
-    } catch 
+    } catch {
+      // Hook state resets the spinner even when the request fails.
+    }
   }
 
-  if (loading) return <LoadingSpinner label="Loading skills…" />;
+  if (loading) {
+    return <LoadingSpinner label="Loading skills..." />;
+  }
 
   const contextSkills = uploadResult?.all_skills ?? [];
   const dbResumeSkills = skills
-    .filter((s) => s.source === "document")
-    .map((s) => s.skill_name);
-  const extractedSkills =
-    contextSkills.length > 0 ? contextSkills : dbResumeSkills;
+    .filter((skill) => skill.source === "document")
+    .map((skill) => skill.skill_name);
+  const extractedSkills = contextSkills.length > 0 ? contextSkills : dbResumeSkills;
 
   return (
     <div className="space-y-8 max-w-3xl">
-      
       <div>
         <h1 className="font-display" style={{ marginBottom: "0.35rem" }}>
           Skills
@@ -48,18 +53,18 @@ export default function SkillsPage() {
         </p>
       </div>
 
-      
       {extractedSkills.length > 0 && (
         <div className="card card-md anim-fade-up">
           <div className="flex items-center gap-2 mb-4">
-            <span className="text-base">📄</span>
+            <span className="text-base">Resume</span>
             <h2 className="text-base" style={{ margin: 0 }}>
-              Extracted from Resume
+              Extracted From Resume
             </h2>
             <span className="ml-auto badge badge-accent">
               {extractedSkills.length} skills
             </span>
           </div>
+
           <div className="flex flex-wrap gap-2">
             {extractedSkills.map((skill, i) => (
               <span
@@ -74,21 +79,19 @@ export default function SkillsPage() {
         </div>
       )}
 
-      
       <div className="card card-md anim-fade-up delay-1">
         <div className="flex items-center gap-2 mb-4">
-          <span className="text-base">🛠</span>
+          <span className="text-base">Skills</span>
           <h2 className="text-base" style={{ margin: 0 }}>
             Your Skills
           </h2>
           <span className="ml-auto badge badge-brand">{skills.length}</span>
         </div>
 
-        
         <form onSubmit={handleAdd} className="flex gap-2 mb-5">
           <input
             type="text"
-            placeholder="e.g. Python, Project Management…"
+            placeholder="e.g. Python, Project Management..."
             value={newSkill}
             onChange={(e) => setNewSkill(e.target.value)}
             disabled={adding}
@@ -121,7 +124,7 @@ export default function SkillsPage() {
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
                   />
                 </svg>
-                Adding…
+                Adding...
               </span>
             ) : (
               "Add"
@@ -135,14 +138,13 @@ export default function SkillsPage() {
           </p>
         ) : (
           <div className="flex flex-wrap gap-2">
-            {skills.map((s, i) => (
+            {skills.map((skill, i) => (
               <span
-                key={s.id}
+                key={skill.id}
                 className="skill-tag inline-flex items-center gap-1.5 anim-fade-up"
                 style={{ animationDelay: `${i * ANIM_STEP}s` }}
               >
-                
-                {removingId === s.id ? (
+                {removingId === skill.id ? (
                   <svg
                     className="animate-spin w-3 h-3 color-muted"
                     xmlns="http://www.w3.org/2000/svg"
@@ -164,15 +166,15 @@ export default function SkillsPage() {
                     />
                   </svg>
                 ) : null}
-                {s.skill_name}
-                
+                {skill.skill_name}
                 <button
-                  onClick={() => handleRemove(s.id)}
-                  disabled={removingId === s.id}
-                  aria-label={`Remove ${s.skill_name}`}
+                  type="button"
+                  onClick={() => handleRemove(skill.id)}
+                  disabled={removingId === skill.id}
+                  aria-label={`Remove ${skill.skill_name}`}
                   className="skill-remove-btn flex items-center justify-center w-4 h-4 rounded-full text-xs"
                 >
-                  ×
+                  x
                 </button>
               </span>
             ))}

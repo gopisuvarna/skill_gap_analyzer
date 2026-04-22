@@ -82,6 +82,12 @@ class TestJwtCookieAuthentication(TestCase):
         request = self.factory.get("/api/auth/me/")
         self.assertIsNone(self.auth.authenticate(request))
 
+    def test_authenticate_skips_public_auth_endpoints_even_with_bad_cookie(self):
+        request = self.factory.post("/api/auth/login/")
+        request.COOKIES[settings.COOKIE_CONFIG["ACCESS_COOKIE_NAME"]] = "invalid-token"
+
+        self.assertIsNone(self.auth.authenticate(request))
+
     def test_authenticate_uses_authorization_header_when_cookie_missing(self):
         token = self._access_token(self.user.id)
         request = self.factory.get("/api/auth/me/", HTTP_AUTHORIZATION=f"Bearer {token}")
